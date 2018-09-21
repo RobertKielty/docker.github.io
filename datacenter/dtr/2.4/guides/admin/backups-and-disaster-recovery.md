@@ -67,7 +67,7 @@ and creating a tar archive of the [dtr-registry volume](../architecture.md):
 
 ```none
 sudo tar -cf {{ image_backup_file }} \
-{% raw %}$(dirname $(docker volume inspect --format '{{.Mountpoint}}' dtr-registry-<replica-id>)){% endraw %}
+  {% raw %}$(dirname $(docker volume inspect --format '{{.Mountpoint}}' dtr-registry-<replica-id>)){% endraw %}
 ```
 
 If you're using a different storage backend, follow the best practices
@@ -221,6 +221,10 @@ Where:
 * `<hostname>` is the hostname of the node where you've restored the images
 * `<replica-id>` the id of the replica you backed up
 * `<dtr-external-url>`the url that clients use to access DTR
+
+If you're using NFS as a storage backend, also include `--nfs-storage-url` as
+part of your restore command, otherwise DTR is restored but starts using a
+local volume to persist your Docker images.
 
 ### Re-fetch the vulnerability database
 

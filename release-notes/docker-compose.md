@@ -5,6 +5,240 @@ keywords: release notes, compose
 toc_max: 2
 ---
 
+## 1.22.0 (2018-07-17)
+
+### New features
+
+#### Compose format version 3.7
+
+- Introduced version 3.7 of the `docker-compose.yml` specification.
+  This version requires Docker Engine 18.06.0 or above.
+
+- Added support for `rollback_config` in the deploy configuration
+
+- Added support for the `init` parameter in service configurations
+
+- Added support for extension fields in service, network, volume, secret,
+  and config configurations
+
+#### Compose format version 2.4
+
+- Added support for extension fields in service, network,
+  and volume configurations
+
+### Bugfixes
+
+- Fixed a bug that prevented deployment with some Compose files when
+  `DOCKER_DEFAULT_PLATFORM` was set
+
+- Compose will no longer try to create containers or volumes with
+  invalid starting characters
+
+- Fixed several bugs that prevented Compose commands from working properly
+  with containers created with an older version of Compose
+
+- Fixed an issue with the output of `docker-compose config` with the
+  `--compatibility-mode` flag enabled when the source file contains
+  attachable networks
+
+- Fixed a bug that prevented the `gcloud` credential store from working
+  properly when used with the Compose binary on UNIX
+
+- Fixed a bug that caused connection errors when trying to operate
+  over a non-HTTPS TCP connection on Windows
+
+- Fixed a bug that caused builds to fail on Windows if the Dockerfile
+  was located in a subdirectory of the build context
+
+- Fixed an issue that prevented proper parsing of UTF-8 BOM encoded
+  Compose files on Windows
+
+- Fixed an issue with handling of the double-wildcard (`**`) pattern in `.dockerignore` files when using `docker-compose build`
+
+- Fixed a bug that caused auth values in legacy `.dockercfg` files to be ignored
+- `docker-compose build` will no longer attempt to create image names starting with an invalid character
+
+## 1.21.2 (2018-05-03)
+
+### Bugfixes
+
+- Fixed a bug where the ip_range attirbute in IPAM configs was prevented
+  from passing validation
+
+## 1.21.1 (2018-04-27)
+
+### Bugfixes
+
+- In 1.21.0, we introduced a change to how project names are sanitized for
+  internal use in resource names. This caused issues when manipulating an
+  existing, deployed application whose name had changed as a result.
+  This release properly detects resources using "legacy" naming conventions.
+
+- Fixed an issue where specifying an in-context Dockerfile using an absolute
+  path would fail despite being valid.
+
+- Fixed a bug where IPAM option changes were incorrectly detected, preventing
+  redeployments.
+
+- Validation of v2 files now properly checks the structure of IPAM configs.
+
+- Improved support for credentials stores on Windows to include binaries using
+  extensions other than `.exe`. The list of valid extensions is determined by
+  the contents of the `PATHEXT` environment variable.
+
+- Fixed a bug where Compose would generate invalid binds containing duplicate
+  elements with some v3.2 files, triggering errors at the Engine level during
+  deployment.
+
+## 1.21.0 (2018-04-11)
+
+### New features
+
+#### Compose file version 2.4
+
+- Introduced version 2.4 of the `docker-compose.yml` specification.
+  This version requires Docker Engine 17.12.0 or above.
+
+- Added support for the `platform` parameter in service definitions.
+  If supplied, the parameter is also used when performing build for the
+  service.
+
+#### Compose file version 2.2 and up
+
+- Added support for the `cpu_rt_period` and `cpu_rt_runtime` parameters
+  in service definitions (2.x only).
+
+#### Compose file version 2.1 and up
+
+- Added support for the `cpu_period` parameter in service definitions
+  (2.x only).
+
+- Added support for the `isolation` parameter in service build configurations.
+  Additionally, the `isolation` parameter in service definitions is used for
+  builds as well if no `build.isolation` parameter is defined. (2.x only)
+
+#### All formats
+
+- Added support for the `--workdir` flag in `docker-compose exec`.
+
+- Added support for the `--compress` flag in `docker-compose build`.
+
+- `docker-compose pull` is now performed in parallel by default. You can
+  opt out using the `--no-parallel` flag. The `--parallel` flag is now
+  deprecated and will be removed in a future version.
+
+- Dashes and underscores in project names are no longer stripped out.
+
+- `docker-compose build` now supports the use of Dockerfile from outside
+  the build context.
+
+### Bugfixes
+
+- Compose now checks that the volume's configuration matches the remote
+  volume, and errors out if a mismatch is detected.
+
+- Fixed a bug that caused Compose to raise unexpected errors when attempting
+  to create several one-off containers in parallel.
+
+- Fixed a bug with argument parsing when using `docker-machine config` to
+  generate TLS flags for `exec` and `run` commands.
+
+- Fixed a bug where variable substitution with an empty default value
+  (e.g. `${VAR:-}`) would print an incorrect warning.
+
+- Improved resilience when encoding of the Compose file doesn't match the
+  system's. Users are encouraged to use UTF-8 when possible.
+
+- Fixed a bug where external overlay networks in Swarm would be incorrectly
+  recognized as inexistent by Compose, interrupting otherwise valid
+  operations.
+
+## 1.20.0 (2018-03-20)
+
+### New features
+
+#### Compose file version 3.6
+
+- Introduced version 3.6 of the `docker-compose.yml` specification.
+  This version must be used with Docker Engine 18.02.0 or above.
+
+- Added support for the `tmpfs.size` property in volume mappings
+
+#### Compose file version 3.2 and up
+
+- The `--build-arg` option can now be used without specifying a service
+  in `docker-compose build`
+
+#### Compose file version 2.3
+
+- Added support for `device_cgroup_rules` in service definitions
+
+- Added support for the `tmpfs.size` property in long-form volume mappings
+
+- The `--build-arg` option can now be used without specifying a service
+  in `docker-compose build`
+
+#### All formats
+
+- Added a `--log-level` option to the top-level `docker-compose` command.
+  Accepted values are `debug`, `info`, `warning`, `error`, `critical`.
+  Default log level is `info`
+
+- `docker-compose run` now allows users to unset the container's entrypoint
+
+- Proxy configuration found in the `~/.docker/config.json` file now populates
+  environment and build args for containers created by Compose
+
+- Added the `--use-aliases` flag to `docker-compose run`, indicating that
+  network aliases declared in the service's config should be used for the
+  running container
+
+- Added the `--include-deps` flag to `docker-compose pull`
+
+- `docker-compose run` now kills and removes the running container upon
+  receiving `SIGHUP`
+
+- `docker-compose ps` now shows the containers' health status if available
+
+- Added the long-form `--detach` option to the `exec`, `run` and `up`
+  commands
+
+### Bugfixes
+
+- Fixed `.dockerignore` handling, notably with regard to absolute paths
+  and last-line precedence rules
+
+- Fixed an issue where Compose would make costly DNS lookups when connecting
+  to the Engine when using Docker For Mac
+
+- Fixed a bug introduced in 1.19.0 which caused the default certificate path
+  to not be honored by Compose
+
+- Fixed a bug where Compose would incorrectly check whether a symlink's
+  destination was accessible when part of a build context
+
+- Fixed a bug where `.dockerignore` files containing lines of whitespace
+  caused Compose to error out on Windows
+
+- Fixed a bug where `--tls*` and `--host` options wouldn't be properly honored
+  for interactive `run` and `exec` commands
+
+- A `seccomp:<filepath>` entry in the `security_opt` config now correctly
+  sends the contents of the file to the engine
+
+- ANSI output for `up` and `down` operations should no longer affect the wrong
+  lines
+
+- Improved support for non-unicode locales
+
+- Fixed a crash occurring on Windows when the user's home directory name
+  contained non-ASCII characters
+
+- Fixed a bug occurring during builds caused by files with a negative `mtime`
+  values in the build context
+
+- Fixed an encoding bug when streaming build progress
+
 ## 1.19.0 (2018-02-07)
 
 ### Breaking changes

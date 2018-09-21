@@ -17,16 +17,15 @@ a [UCP support dump](..\..\get-support.md) to use an environment variable
 that indicates the current architecture:
 
 ```bash
-{% raw %}
-[[ $(docker info --format='{{.Architecture}}') == s390x ]] && export _ARCH='-s390x' || export _ARCH=''
-{% endraw %}
+{% raw %}[[ $(docker info --format='{{.Architecture}}') == s390x ]] && export _ARCH='-s390x' || export _ARCH=''{% endraw %}
 
 docker container run --rm \
   --name ucp \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --log-driver none \
   {{ page.ucp_org }}/{{ page.ucp_repo }}:{{ page.ucp_version }}${_ARCH} \
-  support > docker-support.tgz
+  support > \
+  docker-support-${HOSTNAME}-$(date +%Y%m%d-%H_%M_%S).tgz
 ```
 
 In this example, the environment variable is named `_ARCH`, but you can use any 

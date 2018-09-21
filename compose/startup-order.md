@@ -6,7 +6,7 @@ notoc: true
 ---
 
 You can control the order of service startup with the
-[depends_on](compose-file.md#depends-on) option. Compose always starts
+[depends_on](compose-file.md#depends_on) option. Compose always starts
 containers in dependency order, where dependencies are determined by
 `depends_on`, `links`, `volumes_from`, and `network_mode: "service:..."`.
 
@@ -63,7 +63,7 @@ script:
         shift
         cmd="$@"
 
-        until psql -h "$host" -U "postgres" -c '\q'; do
+        until PGPASSWORD=$POSTGRES_PASSWORD psql -h "$host" -U "postgres" -c '\q'; do
           >&2 echo "Postgres is unavailable - sleeping"
           sleep 1
         done

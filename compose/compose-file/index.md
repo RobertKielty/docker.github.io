@@ -60,7 +60,7 @@ services:
   vote:
     image: dockersamples/examplevotingapp_vote:before
     ports:
-      - 5000:80
+      - "5000:80"
     networks:
       - frontend
     depends_on:
@@ -75,7 +75,7 @@ services:
   result:
     image: dockersamples/examplevotingapp_result:before
     ports:
-      - 5001:80
+      - "5001:80"
     networks:
       - backend
     depends_on:
@@ -247,32 +247,32 @@ build process.
 First, specify the arguments in your Dockerfile:
 
     ARG buildno
-    ARG password
+    ARG gitcommithash
 
     RUN echo "Build number: $buildno"
-    RUN script-requiring-password.sh "$password"
+    RUN echo "Based on commit: $gitcommithash"
 
-Then specify the arguments under the `build` key. You can pass either a mapping
+Then specify the arguments under the `build` key. You can pass a mapping
 or a list:
 
     build:
       context: .
       args:
         buildno: 1
-        password: secret
+        gitcommithash: cdc3b19
 
     build:
       context: .
       args:
         - buildno=1
-        - password=secret
+        - gitcommithash=cdc3b19
 
 You can omit the value when specifying a build argument, in which case its value
 at build time is the value in the environment where Compose is running.
 
     args:
       - buildno
-      - password
+      - gitcommithash
 
 > **Note**: YAML boolean values (`true`, `false`, `yes`, `no`, `on`, `off`) must
 > be enclosed in quotes, so that the parser interprets them as strings.
@@ -566,7 +566,7 @@ services:
   wordpress:
     image: wordpress
     ports:
-      - 8080:80
+      - "8080:80"
     networks:
       - overlay
     deploy:
@@ -646,7 +646,7 @@ in the [swarm](/engine/swarm/) topics.)
 
 Specify placement of constraints and preferences. See the docker service create documentation for a full description of the syntax and available types of [constraints](/engine/reference/commandline/service_create.md#specify-service-constraints-constraint) and [preferences](/engine/reference/commandline/service_create.md#specify-service-placement-preferences-placement-pref).
 
-    version: '3'
+    version: '3.3'
     services:
       db:
         image: postgres
@@ -738,8 +738,8 @@ Configures if and how to restart containers when they exit. Replaces
 - `delay`: How long to wait between restart attempts, specified as a
   [duration](#specifying-durations) (default: 0).
 - `max_attempts`: How many times to attempt to restart a container before giving
-  up (default: never give up). If the restart does not succeed within the configured 
-  `window`, this attempt doesn't count toward the configured `max_attempts` value. 
+  up (default: never give up). If the restart does not succeed within the configured
+  `window`, this attempt doesn't count toward the configured `max_attempts` value.
   For example, if `max_attempts` is set to '2', and the restart fails on the first
   attempt, more than two restarts may be attempted.
 - `window`: How long to wait before deciding if a restart has succeeded,
@@ -758,6 +758,20 @@ services:
         max_attempts: 3
         window: 120s
 ```
+
+#### rollback_config
+
+> [Version 3.7 file format](compose-versioning.md#version-37) and up
+
+Configures how the service should be rollbacked in case of a failing
+update.
+
+- `parallelism`: The number of containers to rollback at a time. If set to 0, all containers rollback simultaneously.
+- `delay`: The time to wait between each container group's rollback (default 0s).
+- `failure_action`: What to do if a rollback fails. One of `continue` or `pause` (default `pause`)
+- `monitor`: Duration after each task update to monitor for failure `(ns|us|ms|s|m|h)` (default 0s).
+- `max_failure_ratio`: Failure rate to tolerate during a rollback (default 0).
+- `order`: Order of operations during rollbacks. One of `stop-first` (old task is stopped before starting new one), or `start-first` (new task is started first, and the running tasks briefly overlap) (default `stop-first`).
 
 #### update_config
 
@@ -792,7 +806,7 @@ services:
 
 #### Not supported for `docker stack deploy`
 
-The following sub-options (supported for `docker compose up` and `docker compose run`) are _not supported_ for `docker stack deploy` or the `deploy` key.
+The following sub-options (supported for `docker-compose up` and `docker-compose run`) are _not supported_ for `docker stack deploy` or the `deploy` key.
 
 - [build](#build)
 - [cgroup_parent](#cgroup_parent)
@@ -1118,6 +1132,27 @@ If the image does not exist, Compose attempts to pull it, unless you have also
 specified [build](#build), in which case it builds it using the specified
 options and tags it with the specified tag.
 
+### init
+
+> [Added in version 3.7 file format](compose-versioning.md#version-37).
+
+Run an init inside the container that forwards signals and reaps processes.
+Either set a boolean value to use the default `init`, or specify a path to
+a custom one.
+
+    version: '3.7'
+    services:
+      web:
+        image: alpine:latest
+        init: true
+
+
+    version: '2.2'
+    services:
+      web:
+        image: alpine:latest
+        init: /usr/libexec/docker-init
+
 ### isolation
 
 Specify a container’s isolation technology. On Linux, the only supported value
@@ -1246,7 +1281,7 @@ For a full list of supported logging drivers and their options, see
 
 ### network_mode
 
-Network mode. Use the same values as the docker client `--net` parameter, plus
+Network mode. Use the same values as the docker client `--network` parameter, plus
 the special form `service:[service name]`.
 
     network_mode: "bridge"
@@ -1379,6 +1414,8 @@ containers in the bare-metal machine's namespace and vise-versa.
 ### ports
 
 Expose ports.
+
+> **Note:** Port mapping is incompatible with `network_mode: host`
 
 #### Short syntax
 
@@ -1781,7 +1818,7 @@ services:
   php:
     image: php:7.1-fpm
     ports:
-      - 9000
+      - "9000"
     volumes:
       - .:/var/www/project:cached
 ```
@@ -1984,7 +2021,7 @@ conflicting with those used by other software.
 > [Added in version 3.4 file format](compose-versioning.md#version-34)
 
 Set a custom name for this volume. The name field can be used to reference
-networks that contain special characters. The name is used as is
+volumes that contain special characters. The name is used as is
 and will **not** be scoped with the stack name.
 
     version: '3.4'
@@ -2052,7 +2089,7 @@ Use the host's networking stack, or no networking. Equivalent to
 use [network_mode](#network_mode) instead.
 
 The syntax for using built-in networks like `host` and `none` is a little
-different. Define an external network with the name `host` or `none` (which
+different. Define an external network with the name `host` or `none` (that
 Docker has already created automatically) and an alias that Compose can use
 (`hostnet` or `nonet` in these examples), then grant the service access to that
 network, using the alias.
@@ -2066,8 +2103,8 @@ services:
 
 networks:
   hostnet:
-    external:
-      name: host
+    external: true
+    name: host
 ```
 
 ```yaml
@@ -2079,8 +2116,8 @@ services:
 
 networks:
   nonet:
-    external:
-      name: none
+    external: true
+    name: none
 ```
 
 ### driver_opts
